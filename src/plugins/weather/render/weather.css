@@ -289,7 +289,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1dvh 2dvw;
+  padding: 1dvh 2dvw 1dvh 1dvw;
   border-left: 1px solid;
 }
 
@@ -308,7 +308,7 @@
 }
 
 .indoor-temp {
-  font-size: min(5dvh, 5vw);
+  font-size: 0.4em;
   font-weight: bold;
 }
 
@@ -330,7 +330,7 @@
   }
 
   .data-points {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(2, 1fr);
     width: 100%;
   }
