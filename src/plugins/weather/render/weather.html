@@ -22,7 +22,7 @@
         <div class="current-weather">
           <div class="current-temp">{{ current_temperature }}<span class="temperature-unit">{{temperature_unit}}</span></div>
           <div class="feels-like">Feels Like {{ feels_like }}{% if units != "standard" %}°{% endif %}</div>
-          <div class="min-max">{{ forecast[0].high }}{% if units != "standard" %}°{% endif %} / {{ forecast[0].low }}{% if units != "standard" %}°{% endif %}</div>
+          <div class="min-max">{{ forecast[0].low }}{% if units != "standard" %}°{% endif %} / {{ forecast[0].high }}{% if units != "standard" %}°{% endif %}</div>
         </div>
     </div>
 
@@ -31,7 +31,7 @@
       <div class="indoor-label">Indoor</div>
       <div class="indoor-values">
         {% if indoor_temperature is not none %}
-        <span class="indoor-temp">{{ indoor_temperature }}{% if units != "standard" %}°{% endif %}</span>
+        <span class="indoor-temp temperature-unit">{{ indoor_temperature }}{% if units != "standard" %}°{% endif %}</span>
         {% endif %}
         {% if indoor_humidity is not none %}
         <span class="indoor-humidity">{{ indoor_humidity }}%</span>

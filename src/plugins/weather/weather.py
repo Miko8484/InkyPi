@@ -483,26 +483,10 @@ class Weather(BasePlugin):
         })
 
         data_points.append({
-            "label": "Pressure",
-            "measurement": weather.get('current', {}).get("pressure"),
-            "unit": 'hPa',
-            "icon": self.get_plugin_dir('icons/pressure.png')
-        })
-
-        data_points.append({
             "label": "UV Index",
             "measurement": weather.get('current', {}).get("uvi"),
             "unit": '',
             "icon": self.get_plugin_dir('icons/uvi.png')
-        })
-
-        visibility = weather.get('current', {}).get("visibility")/1000
-        visibility_str = f">{visibility}" if visibility >= 10 else visibility
-        data_points.append({
-            "label": "Visibility",
-            "measurement": visibility_str,
-            "unit": 'km',
-            "icon": self.get_plugin_dir('icons/visibility.png')
         })
 
         aqi = air_quality.get('list', [])[0].get("main", {}).get("aqi")
