@@ -31,7 +31,7 @@
       <div class="indoor-label">Indoor</div>
       <div class="indoor-values">
         {% if indoor_temperature is not none %}
-        <span class="indoor-temp temperature-unit">{{ indoor_temperature }}{% if units != "standard" %}°{% endif %}</span>
+        <span class="indoor-temp">{{ indoor_temperature }}{% if units != "standard" %}°{% endif %}</span>
         {% endif %}
         {% if indoor_humidity is not none %}
         <span class="indoor-humidity">{{ indoor_humidity }}%</span>
