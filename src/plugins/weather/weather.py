@@ -754,7 +754,7 @@ class Weather(BasePlugin):
             logger.error("Failed to retrieve Timezone from weather data")
             raise RuntimeError("Timezone not found in weather data.")
 
-    def get_xiaomi_sensor_data(self, mac_address, timeout=10.0):
+    def get_xiaomi_sensor_data(self, mac_address, timeout=30.0):
         """
         Read temperature and humidity from Xiaomi Bluetooth sensor.
         Supports LYWSD03MMC and similar sensors that broadcast via BLE advertisements.
