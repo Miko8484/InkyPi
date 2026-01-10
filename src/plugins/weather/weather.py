@@ -56,7 +56,7 @@ WEATHER_URL = "https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lo
 AIR_QUALITY_URL = "http://api.openweathermap.org/data/2.5/air_pollution?lat={lat}&lon={long}&appid={api_key}"
 GEOCODING_URL = "http://api.openweathermap.org/geo/1.0/reverse?lat={lat}&lon={long}&limit=1&appid={api_key}"
 
-OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={long}&hourly=temperature_2m,precipitation,precipitation_probability,relative_humidity_2m,surface_pressure,visibility&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&current_weather=true&timezone=auto&models=best_match&forecast_days={forecast_days}"
+OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={long}&hourly=temperature_2m,precipitation,precipitation_probability,relative_humidity_2m&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&current_weather=true&timezone=auto&models=best_match&forecast_days={forecast_days}"
 OPEN_METEO_AIR_QUALITY_URL = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude={lat}&longitude={long}&hourly=european_aqi,uv_index,uv_index_clear_sky&timezone=auto"
 OPEN_METEO_UNIT_PARAMS = {
     "standard": "temperature_unit=kelvin&wind_speed_unit=ms&precipitation_unit=mm",
@@ -561,23 +561,6 @@ class Weather(BasePlugin):
             "icon": self.get_plugin_dir('icons/humidity.png')
         })
 
-        # Pressure
-        current_pressure = "N/A"
-        pressure_hourly_times = hourly_data.get('time', [])
-        pressure_values = hourly_data.get('surface_pressure', [])
-        for i, time_str in enumerate(pressure_hourly_times):
-            try:
-                if datetime.fromisoformat(time_str).astimezone(tz).hour == current_time.hour:
-                    current_pressure = int(pressure_values[i])
-                    break
-            except ValueError:
-                logger.warning(f"Could not parse time string {time_str} for pressure.")
-                continue
-        data_points.append({
-            "label": "Pressure", "measurement": current_pressure, "unit": 'hPa',
-            "icon": self.get_plugin_dir('icons/pressure.png')
-        })
-
         # UV Index
         uv_index_hourly_times = aqi_data.get('hourly', {}).get('time', [])
         uv_index_values = aqi_data.get('hourly', {}).get('uv_index', [])
@@ -593,35 +576,6 @@ class Weather(BasePlugin):
         data_points.append({
             "label": "UV Index", "measurement": current_uv_index, "unit": '',
             "icon": self.get_plugin_dir('icons/uvi.png')
-        })
-
-        # Visibility
-        current_visibility = "N/A"
-        visibility_hourly_times = hourly_data.get('time', [])
-        visibility_values = hourly_data.get('visibility', [])
-        for i, time_str in enumerate(visibility_hourly_times):
-            try:
-                if datetime.fromisoformat(time_str).astimezone(tz).hour == current_time.hour:
-                    visibility = visibility_values[i]
-                    if units == "imperial":
-                        current_visibility = int(round(visibility, 0))
-                        unit_label = "ft"
-                    else:
-                        current_visibility = round(visibility / 1000, 1)
-                        unit_label = "km"
-                    break
-            except ValueError:
-                logger.warning(f"Could not parse time string {time_str} for visibility.")
-                continue
-
-        visibility_str = f">{current_visibility}" if isinstance(current_visibility, (int, float)) and (
-            (units == "imperial" and current_visibility >= 32808) or 
-            (units != "imperial" and current_visibility >= 10)
-        ) else current_visibility
-
-        data_points.append({
-            "label": "Visibility", "measurement": visibility_str, "unit": unit_label,
-            "icon": self.get_plugin_dir('icons/visibility.png')
         })
 
         # Air Quality
@@ -776,18 +730,13 @@ class Weather(BasePlugin):
                 }
 
         try:
-            # Run the async read
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            result = loop.run_until_complete(read_sensor())
-            loop.close()
-
+            result = asyncio.run(read_sensor())
             if result:
                 logger.info(f"Xiaomi sensor data: temp={result.get('temperature')}°C, humidity={result.get('humidity')}%, voltage={result.get('voltage')}V")
             return result
 
         except Exception as e:
-            logger.warning(f"Could not read data from Xiaomi sensor {mac_address}: {str(e)}")
+            logger.warning(f"Could not read data from Xiaomi sensor {mac_address}: {type(e).__name__}: {e}")
             return None
 
     def convert_sensor_temperature(self, temp_celsius, units):
