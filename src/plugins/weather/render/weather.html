@@ -95,6 +95,14 @@
     {% endfor %}
   </div>
   {% endif %}
+
+  <!-- Quote of the Day -->
+  {% if quote %}
+  <div class="quote-container">
+    <div class="quote-text">"{{ quote }}"<span class="quote-author"> — {{ quote_author }}</span></div>
+    
+  </div>
+  {% endif %}
 </div>
 
 <script src="{{static_dir}}/scripts/chart.js" charset="UTF-8"></script>

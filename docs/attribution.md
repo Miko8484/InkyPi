@@ -50,7 +50,6 @@ This project uses various fonts and icons, each with specific licensing terms. B
 | <img src="../src/plugins/weather/icons/uvi.png" width="32" height="32"> |<a href="https://www.flaticon.com/free-icons/uv-index" title="uv index icons">Uv index icons created by Freepik - Flaticon</a>|
 | <img src="../src/plugins/weather/icons/visibility.png" width="32" height="32"> |<a href="https://www.flaticon.com/free-icons/observe" title="observe icons">Observe icons created by meaicon - Flaticon</a>|
 | <img src="../src/plugins/weather/icons/wind.png" width="32" height="32"> |<a href="https://www.flaticon.com/free-icons/wind" title="wind icons">Wind icons created by riajulislam - Flaticon</a>|
-| <img src="../src/plugins/qod/icon.png" width="32" height="32"> |<a href="https://www.flaticon.com/free-icons/quote" title="quote icons">Quote icons created by Icon Mela - Flaticon</a>|
 
 ## Waveshare e-Paper
 This project includes Waveshare e-Paper display drivers licensed under an MIT license.

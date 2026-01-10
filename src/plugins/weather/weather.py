@@ -58,6 +58,7 @@ GEOCODING_URL = "http://api.openweathermap.org/geo/1.0/reverse?lat={lat}&lon={lo
 
 OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={long}&hourly=temperature_2m,precipitation,precipitation_probability,relative_humidity_2m&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&current_weather=true&timezone=auto&models=best_match&forecast_days={forecast_days}"
 OPEN_METEO_AIR_QUALITY_URL = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude={lat}&longitude={long}&hourly=european_aqi,uv_index,uv_index_clear_sky&timezone=auto"
+ZENQUOTES_API_URL = "https://zenquotes.io/api/today"
 OPEN_METEO_UNIT_PARAMS = {
     "standard": "temperature_unit=kelvin&wind_speed_unit=ms&precipitation_unit=mm",
     "metric":   "temperature_unit=celsius&wind_speed_unit=ms&precipitation_unit=mm",
@@ -130,6 +131,11 @@ class Weather(BasePlugin):
             else:
                 template_params['indoor_temperature'] = None
                 template_params['indoor_humidity'] = None
+
+            # Fetch quote of the day
+            quote_data = self.get_quote()
+            template_params['quote'] = quote_data.get('quote', '')
+            template_params['quote_author'] = quote_data.get('author', '')
 
         except Exception as e:
             logger.error(f"{weather_provider} request failed: {str(e)}")
@@ -748,3 +754,23 @@ class Weather(BasePlugin):
         elif units == "standard":
             return round(temp_celsius + 273.15, 1)
         return temp_celsius
+
+    def get_quote(self):
+        """Fetch quote of the day from ZenQuotes API."""
+        try:
+            response = requests.get(ZENQUOTES_API_URL, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+
+            if data and len(data) > 0:
+                return {
+                    "quote": data[0].get("q", ""),
+                    "author": data[0].get("a", "")
+                }
+        except Exception as e:
+            logger.error(f"Failed to fetch quote: {str(e)}")
+
+        return {
+            "quote": "The only way to do great work is to love what you do.",
+            "author": "Steve Jobs"
+        }
