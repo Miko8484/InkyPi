@@ -173,7 +173,8 @@ class Weather(BasePlugin):
             "feels_like": str(round(current.get("feels_like"))),
             "temperature_unit": UNITS[units]["temperature"],
             "units": units,
-            "time_format": time_format
+            "time_format": time_format,
+            "humidity_icon": self.get_plugin_dir(f'icons/humidity.png')
         }
         data['forecast'] = self.parse_forecast(weather_data.get('daily'), tz, current_suffix, lat)
         data['data_points'] = self.parse_data_points(weather_data, aqi_data, tz, units, time_format)
@@ -195,7 +196,8 @@ class Weather(BasePlugin):
             "feels_like": str(round(current.get("apparent_temperature", current.get("temperature", 0)))),
             "temperature_unit": UNITS[units]["temperature"],
             "units": units,
-            "time_format": time_format
+            "time_format": time_format,
+            "humidity_icon": self.get_plugin_dir(f'icons/humidity.png')
         }
 
         data['forecast'] = self.parse_open_meteo_forecast(weather_data.get('daily', {}), tz, is_day, lat)
