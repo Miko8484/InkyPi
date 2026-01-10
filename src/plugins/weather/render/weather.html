@@ -20,23 +20,26 @@
       <!-- Icon + Temperature -->
         <img class="current-icon" src="{{current_day_icon}}" alt="Current Weather Icon">
         <div class="current-weather">
+          <div class="temp-label">Outdoor</div>
           <div class="current-temp">{{ current_temperature }}<span class="temperature-unit">{{temperature_unit}}</span></div>
           <div class="feels-like">Feels Like {{ feels_like }}{% if units != "standard" %}°{% endif %}</div>
           <div class="min-max">{{ forecast[0].low }}{% if units != "standard" %}°{% endif %} / {{ forecast[0].high }}{% if units != "standard" %}°{% endif %}</div>
         </div>
     </div>
-
+    
     {% if indoor_temperature is not none or indoor_humidity is not none %}
-    <div class="indoor-sensor">
-      <div class="indoor-label">Indoor</div>
-      <div class="indoor-values">
-        {% if indoor_temperature is not none %}
-        <span class="indoor-temp">{{ indoor_temperature }}{% if units != "standard" %}°{% endif %}</span>
-        {% endif %}
-        {% if indoor_humidity is not none %}
-        <span class="indoor-humidity">{{ indoor_humidity }}%</span>
-        {% endif %}
-      </div>
+    <div class="current-temperature-indoor">
+      <!-- Icon + Temperature -->
+        <div class="current-weather">
+          <div class="temp-label">Indoor</div>
+          {% if indoor_temperature is not none %}
+          <div class="current-temp">{{ indoor_temperature }}<span class="temperature-unit">{{temperature_unit}}</span></div>
+          {% endif %}
+          {% if indoor_humidity is not none %}
+          <div class="feels-like">Humidity: {{ indoor_humidity }}%</div>
+          {% endif %}
+          <div class="min-max">&nbsp;</div>
+        </div>
     </div>
     {% endif %}
 

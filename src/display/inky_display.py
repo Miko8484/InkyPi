@@ -2,6 +2,30 @@ import logging
 from inky.auto import auto
 from display.abstract_display import AbstractDisplay
 
+class MockDisplay:
+    # --- Color Constants (required to fix AttributeError) ---
+    BLACK = 0
+    WHITE = 1
+    RED = 2
+    YELLOW = 2
+    
+    def __init__(self):
+        self.resolution = (800, 480)  # Standard Inky Impression resolution
+        self.width = 800
+        self.height = 480
+        self.colour = 'multi'
+        self.h_flip = False
+        self.v_flip = False
+
+    def set_image(self, image, saturation=0.5):
+        # We just log this instead of trying to talk to hardware
+        print("Mock Display: Image set (Simulated)")
+
+    def show(self):
+        print("Mock Display: Show called (Simulated)")
+        
+    def set_border(self, colour):
+        pass
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +51,7 @@ class InkyDisplay(AbstractDisplay):
             ValueError: If the resolution cannot be retrieved or stored.
         """
         
-        self.inky_display = auto()
+        self.inky_display = MockDisplay()
         self.inky_display.set_border(self.inky_display.BLACK)
 
         # store display resolution in device config

@@ -113,7 +113,7 @@ def take_screenshot(target, dimensions, timeout_ms=None):
             img_file_path = img_file.name
 
         command = [
-            "chromium-headless-shell",
+            "C:/Program Files/Google/Chrome/Application/chrome.exe",
             target,
             "--headless",
             f"--screenshot={img_file_path}",
