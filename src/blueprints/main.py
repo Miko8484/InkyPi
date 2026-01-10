@@ -1,9 +1,8 @@
 from flask import Blueprint, request, jsonify, current_app, render_template, send_file
 import os
 from datetime import datetime
-from PIL import Image, ImageFilter
+from PIL import Image
 from io import BytesIO
-
 
 main_bp = Blueprint("main", __name__)
 
@@ -51,17 +50,14 @@ def get_current_image():
     # Convert image to Spectra 6 palette BMP
     img = Image.open(image_path).convert('RGB')
 
-    # Apply slight blur to reduce dithering graininess
-    img = img.filter(ImageFilter.GaussianBlur(radius=0.8))
-
     # Create a palette image with Spectra 6 colors
     palette_img = Image.new('P', (1, 1))
     # Pad palette to 256 colors (768 values) as required by PIL
     padded_palette = SPECTRA_6_PALETTE + [0] * (768 - len(SPECTRA_6_PALETTE))
     palette_img.putpalette(padded_palette)
 
-    # Quantize to the Spectra 6 palette (no dithering for cleaner look)
-    quantized = img.quantize(colors=6, palette=palette_img, dither=Image.Dither.NONE)
+    # Quantize to the Spectra 6 palette
+    quantized = img.quantize(colors=6, palette=palette_img, dither=Image.Dither.FLOYDSTEINBERG)
 
     # Save to BMP in memory
     bmp_buffer = BytesIO()
