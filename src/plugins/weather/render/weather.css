@@ -308,7 +308,7 @@
 }
 
 .indoor-temp {
-  font-size: 45cqmin;
+  font-size: min(4dvh, 4vw);
   font-weight: bold;
 }
 
