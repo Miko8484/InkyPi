@@ -38,6 +38,11 @@ class ImageUpload(BasePlugin):
             image = self.open_image(img_index, image_locations)
             img_index = (img_index + 1) % len(image_locations)
 
+        # Resize image to fit display dimensions if larger
+        display_size = device_config.get_resolution()
+        if image.width > display_size[0] or image.height > display_size[1]:
+            image.thumbnail(display_size, Image.Resampling.LANCZOS)
+
         # Write the new index back ot the device json
         settings['image_index'] = img_index
         orientation = device_config.get_config("orientation")
