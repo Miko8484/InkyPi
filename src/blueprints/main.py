@@ -50,6 +50,11 @@ def get_current_image():
     # Convert image to Spectra 6 palette BMP
     img = Image.open(image_path).convert('RGB')
 
+    # Resize to display dimensions (800x480) if larger
+    DISPLAY_WIDTH, DISPLAY_HEIGHT = 800, 480
+    if img.width > DISPLAY_WIDTH or img.height > DISPLAY_HEIGHT:
+        img.thumbnail((DISPLAY_WIDTH, DISPLAY_HEIGHT), Image.Resampling.LANCZOS)
+
     # Create a palette image with Spectra 6 colors
     palette_img = Image.new('P', (1, 1))
     # Pad palette to 256 colors (768 values) as required by PIL
