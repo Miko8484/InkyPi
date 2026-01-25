@@ -67,7 +67,7 @@ def main_page():
 @main_bp.route('/api/test_pattern')
 def test_pattern():
     """Serve raw color test pattern."""
-    pattern_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'images', 'test_pattern.raw')
+    pattern_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'images', 'test_pattern_8colors.raw')
     with open(pattern_path, 'rb') as f:
         data = f.read()
     return Response(data, mimetype='application/octet-stream')
