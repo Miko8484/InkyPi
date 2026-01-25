@@ -10,25 +10,27 @@ main_bp = Blueprint("main", __name__)
 SPECTRA6_WIDTH = 800
 SPECTRA6_HEIGHT = 480
 
-# Spectra6 6-color palette (RGB values)
-# Color indices: 0=Black, 1=White, 2=Green, 3=Blue, 4=Red, 5=Yellow
-SPECTRA6_PALETTE = [
-    0, 0, 0,        # 0: Black
-    255, 255, 255,  # 1: White
-    0, 128, 0,      # 2: Green
-    0, 0, 255,      # 3: Blue
-    255, 0, 0,      # 4: Red
-    255, 255, 0,    # 5: Yellow
+# Spectra6 6-color palette as FLAT list for putpalette()
+# Color indices: 0=Black, 1=White, 2=Yellow, 3=Red, 4=Blue, 5=Green
+SPECTRA6_PALETTE_FLAT = [
+    0, 0, 0,          # 0 = Black
+    255, 255, 255,    # 1 = White
+    255, 255, 0,      # 2 = Yellow
+    255, 0, 0,        # 3 = Red
+    0, 0, 255,        # 4 = Blue
+    0, 128, 0,        # 5 = Green
 ]
 
-
-def create_palette_image():
+# Pre-create palette image once at module load
+def _create_palette_image():
     """Create a palette image for quantization."""
     palette_img = Image.new('P', (1, 1))
-    # Pad palette to 256 colors (required by PIL)
-    full_palette = SPECTRA6_PALETTE + [0] * (768 - len(SPECTRA6_PALETTE))
+    # Pad palette to 256 colors (768 values = 256 * 3 RGB)
+    full_palette = SPECTRA6_PALETTE_FLAT + [0] * (768 - len(SPECTRA6_PALETTE_FLAT))
     palette_img.putpalette(full_palette)
     return palette_img
+
+PALETTE_IMAGE = _create_palette_image()
 
 
 def convert_to_spectra6(image_path):
@@ -41,8 +43,11 @@ def convert_to_spectra6(image_path):
     img = img.resize((SPECTRA6_WIDTH, SPECTRA6_HEIGHT), Image.Resampling.LANCZOS)
 
     # Quantize to 6-color palette with Floyd-Steinberg dithering
-    palette_img = create_palette_image()
-    quantized = img.quantize(colors=6, palette=palette_img, dither=Image.Dither.FLOYDSTEINBERG)
+    quantized = img.quantize(
+        colors=6,
+        palette=PALETTE_IMAGE,
+        dither=Image.Dither.FLOYDSTEINBERG
+    )
 
     # Get pixel data as numpy array
     pixels = np.array(quantized, dtype=np.uint8)
@@ -53,10 +58,12 @@ def convert_to_spectra6(image_path):
 
     return bytes(packed)
 
+
 @main_bp.route('/')
 def main_page():
     device_config = current_app.config['DEVICE_CONFIG']
     return render_template('inky.html', config=device_config.get_config(), plugins=device_config.get_plugins())
+
 
 @main_bp.route('/api/current_image')
 def get_current_image():
@@ -64,12 +71,12 @@ def get_current_image():
     Serve current_image.png with conditional request support (If-Modified-Since).
 
     Query parameters:
-        format: 'png' (default) or 'spectra6' for ESP32 6-color e-paper format
+        format: 'spectra6' (default) or 'png' for original image
 
     For format=spectra6:
         - Returns raw binary data (800x480 pixels, 2 pixels per byte)
         - Each byte: high nibble = first pixel, low nibble = second pixel
-        - Color indices: 0=Black, 1=White, 2=Green, 3=Blue, 4=Red, 5=Yellow
+        - Color indices: 0=Black, 1=White, 2=Yellow, 3=Red, 4=Blue, 5=Green
         - Total size: 192,000 bytes
     """
     image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'images', 'current_image.png')
