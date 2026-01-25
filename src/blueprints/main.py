@@ -10,84 +10,62 @@ main_bp = Blueprint("main", __name__)
 DISPLAY_WIDTH = 800
 DISPLAY_HEIGHT = 480
 
-# RGB values for each color index
-PALETTE_RGB = np.array([
-    [0, 0, 0],        # 0 = Black
-    [255, 255, 255],  # 1 = White
-    [0, 128, 0],      # 2 = Green
-    [0, 0, 255],      # 3 = Blue
-    [255, 0, 0],      # 4 = Red
-    [255, 255, 0],    # 5 = Yellow
-], dtype=np.float32)
+# ============================================================
+# COLOR PALETTE for Spectra 6 display
+# ============================================================
+# Index 0 = Black
+# Index 1 = White  
+# Index 2 = Green
+# Index 3 = Blue
+# Index 4 = Red
+# Index 5 = Yellow
+# ============================================================
 
+def _create_palette_image():
+    """Create palette image that PIL will strictly adhere to."""
+    # Create image with one pixel per color
+    palette_img = Image.new('P', (6, 1))
+    
+    # Define the 6-color palette
+    palette_data = [
+        0, 0, 0,          # 0 = Black
+        255, 255, 255,    # 1 = White
+        0, 128, 0,        # 2 = Green
+        0, 0, 255,        # 3 = Blue
+        255, 0, 0,        # 4 = Red
+        255, 255, 0,      # 5 = Yellow
+    ] + [0] * (768 - 18)  # Pad to 256 colors
+    
+    palette_img.putpalette(palette_data)
+    
+    # Put each color index in a pixel - this forces PIL to use these indices
+    pixels = palette_img.load()
+    for i in range(6):
+        pixels[i, 0] = i
+    
+    return palette_img
 
-def find_nearest_color(pixel):
-    """Find the nearest palette color index for a pixel."""
-    distances = np.sum((PALETTE_RGB - pixel) ** 2, axis=1)
-    return np.argmin(distances)
+# Pre-create palette image at module load
+PALETTE_IMAGE = _create_palette_image()
 
 
 def convert_to_display_format(image_path):
-    """Convert image to 4bpp packed format with proper 6-color quantization."""
+    """Convert image to 4bpp packed format using fast PIL quantize."""
     img = Image.open(image_path).convert('RGB')
     img = img.resize((DISPLAY_WIDTH, DISPLAY_HEIGHT), Image.Resampling.LANCZOS)
-    
-    # Convert to float array for dithering
-    pixels = np.array(img, dtype=np.float32)
-    
-    # Output indices array
-    indices = np.zeros((DISPLAY_HEIGHT, DISPLAY_WIDTH), dtype=np.uint8)
-    
-    # Floyd-Steinberg dithering with guaranteed 6-color output
-    for y in range(DISPLAY_HEIGHT):
-        for x in range(DISPLAY_WIDTH):
-            old_pixel = np.clip(pixels[y, x], 0, 255)
-            
-            # Find nearest color in our 6-color palette
-            idx = find_nearest_color(old_pixel)
-            indices[y, x] = idx
-            
-            new_pixel = PALETTE_RGB[idx]
-            error = old_pixel - new_pixel
-            
-            # Distribute error (Floyd-Steinberg)
-            if x + 1 < DISPLAY_WIDTH:
-                pixels[y, x + 1] += error * 7 / 16
-            if y + 1 < DISPLAY_HEIGHT:
-                if x > 0:
-                    pixels[y + 1, x - 1] += error * 3 / 16
-                pixels[y + 1, x] += error * 5 / 16
-                if x + 1 < DISPLAY_WIDTH:
-                    pixels[y + 1, x + 1] += error * 1 / 16
-    
-    # Pack 2 pixels per byte
-    flat = indices.flatten()
-    packed = (flat[0::2] << 4) | flat[1::2]
-    
-    return bytes(packed)
 
+    # Quantize with our strict 6-color palette
+    quantized = img.quantize(
+        colors=6,
+        palette=PALETTE_IMAGE,
+        dither=Image.Dither.FLOYDSTEINBERG
+    )
 
-def convert_to_display_format_fast(image_path):
-    """Faster conversion using vectorized operations (less accurate dithering)."""
-    img = Image.open(image_path).convert('RGB')
-    img = img.resize((DISPLAY_WIDTH, DISPLAY_HEIGHT), Image.Resampling.LANCZOS)
-    
-    pixels = np.array(img, dtype=np.float32)
-    
-    # Reshape for broadcasting: (H, W, 1, 3) vs (6, 3)
-    pixels_expanded = pixels.reshape(DISPLAY_HEIGHT, DISPLAY_WIDTH, 1, 3)
-    palette_expanded = PALETTE_RGB.reshape(1, 1, 6, 3)
-    
-    # Calculate distances to all palette colors
-    distances = np.sum((pixels_expanded - palette_expanded) ** 2, axis=3)
-    
-    # Find nearest color index for each pixel
-    indices = np.argmin(distances, axis=2).astype(np.uint8)
-    
-    # Pack 2 pixels per byte
-    flat = indices.flatten()
+    # Get pixel indices and pack
+    pixels = np.array(quantized, dtype=np.uint8)
+    flat = pixels.flatten()
     packed = (flat[0::2] << 4) | flat[1::2]
-    
+
     return bytes(packed)
 
 
