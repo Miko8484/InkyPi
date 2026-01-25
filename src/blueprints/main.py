@@ -64,6 +64,13 @@ def main_page():
     device_config = current_app.config['DEVICE_CONFIG']
     return render_template('inky.html', config=device_config.get_config(), plugins=device_config.get_plugins())
 
+@main_bp.route('/api/test_pattern')
+def test_pattern():
+    """Serve raw color test pattern."""
+    pattern_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'images', 'test_pattern.raw')
+    with open(pattern_path, 'rb') as f:
+        data = f.read()
+    return Response(data, mimetype='application/octet-stream')
 
 @main_bp.route('/api/current_image')
 def get_current_image():
