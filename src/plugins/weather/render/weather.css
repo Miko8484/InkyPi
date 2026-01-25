@@ -50,11 +50,12 @@
 }
 
 .current-date {
-  font-size: min(30cqh, 6cqi);
+  font-size: min(50cqh, 8cqi);
   text-align: center;
   align-content: end;
   width: 100%;
   line-height: 105%;
+  font-weight: bold;
 }
 
 .today-container {
