@@ -29,7 +29,7 @@
   position: absolute;
   top: 0.5dvh;
   right: 0.5dvw;
-  font-size: min(2dvh, 2vw);
+  font-size: min(3dvh, 3vw);
   text-align: right;
   font-weight: bold;
   padding: 0.3dvh 0.5dvw;
@@ -235,11 +235,12 @@
   min-height: 0;
   min-width: 0;
   height: 100%;
-  font-size: min(3dvh, 2.5vw);
+  font-size: min(4dvh, 3.5vw);
+  font-weight: bold;
 }
 
 .low .high {
-  font-weight: normal;
+  font-weight: bold;
 }
 
 .current-weather {
@@ -295,10 +296,11 @@
 }
 
 .min-max {
-  font-size: 12cqmin;
+  font-size: 14cqmin;
   text-align: center;
   position: relative;
   line-height: 140%;
+  font-weight: bold;
 }
 
 .feels-like {

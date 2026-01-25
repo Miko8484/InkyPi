@@ -150,9 +150,9 @@ class Weather(BasePlugin):
         # Add last refresh time
         now = datetime.now(tz)
         if time_format == "24h":
-            last_refresh_time = now.strftime("%Y-%m-%d %H:%M")
+            last_refresh_time = now.strftime("%d-%m-%Y %H:%M")
         else:
-            last_refresh_time = now.strftime("%Y-%m-%d %I:%M %p")
+            last_refresh_time = now.strftime("%d-%m-%Y %I:%M %p")
         template_params["last_refresh_time"] = last_refresh_time
 
         image = self.render_image(dimensions, "weather.html", "weather.css", template_params)
