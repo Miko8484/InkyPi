@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app, render_template, send_file, Response
 import os
+from io import BytesIO
 from datetime import datetime
 from PIL import Image, ImageOps
 import numpy as np
@@ -49,8 +50,8 @@ def _create_palette_image():
 PALETTE_IMAGE = _create_palette_image()
 
 
-def convert_to_display_format(image_path):
-    """Convert image to 4bpp packed format using fast PIL quantize."""
+def resize_and_dither_image(image_path):
+    """Resize image to fit display and apply 6-color dithering."""
     img = Image.open(image_path).convert('RGB')
 
     # Fit image maintaining aspect ratio, with white background
@@ -69,6 +70,13 @@ def convert_to_display_format(image_path):
         palette=PALETTE_IMAGE,
         dither=Image.Dither.FLOYDSTEINBERG
     )
+
+    return quantized
+
+
+def convert_to_display_format(image_path):
+    """Convert image to 4bpp packed format using fast PIL quantize."""
+    quantized = resize_and_dither_image(image_path)
 
     # Get pixel indices and pack
     pixels = np.array(quantized, dtype=np.uint8)
@@ -90,6 +98,29 @@ def test_pattern():
     with open(pattern_path, 'rb') as f:
         data = f.read()
     return Response(data, mimetype='application/octet-stream')
+
+@main_bp.route('/api/preview_image')
+def preview_image():
+    """Preview how the image will look after resize and dithering."""
+    image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'images', 'current_image.png')
+
+    if not os.path.exists(image_path):
+        return jsonify({"error": "Image not found"}), 404
+
+    try:
+        quantized = resize_and_dither_image(image_path)
+        # Convert palette image back to RGB for PNG output
+        rgb_image = quantized.convert('RGB')
+
+        # Save to bytes buffer
+        buffer = BytesIO()
+        rgb_image.save(buffer, format='PNG')
+        buffer.seek(0)
+
+        return send_file(buffer, mimetype='image/png')
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @main_bp.route('/api/current_image')
 def get_current_image():
