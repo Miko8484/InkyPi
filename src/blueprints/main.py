@@ -1,14 +1,14 @@
 from flask import Blueprint, request, jsonify, current_app, render_template, send_file, Response
 import os
 from datetime import datetime
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
 
 main_bp = Blueprint("main", __name__)
 
 # Waveshare 7.3" Spectra6 display configuration
-DISPLAY_WIDTH = 800
-DISPLAY_HEIGHT = 480
+DISPLAY_WIDTH = 480
+DISPLAY_HEIGHT = 800
 
 # ============================================================
 # COLOR PALETTE for Spectra 6 display
@@ -52,7 +52,16 @@ PALETTE_IMAGE = _create_palette_image()
 def convert_to_display_format(image_path):
     """Convert image to 4bpp packed format using fast PIL quantize."""
     img = Image.open(image_path).convert('RGB')
-    img = img.resize((DISPLAY_WIDTH, DISPLAY_HEIGHT), Image.Resampling.LANCZOS)
+
+    # Fit image maintaining aspect ratio, with white background
+    target_size = (DISPLAY_WIDTH, DISPLAY_HEIGHT)
+    fitted_img = ImageOps.contain(img, target_size, Image.Resampling.LANCZOS)
+
+    # Create white background and center the fitted image
+    img = Image.new('RGB', target_size, (255, 255, 255))
+    paste_x = (target_size[0] - fitted_img.width) // 2
+    paste_y = (target_size[1] - fitted_img.height) // 2
+    img.paste(fitted_img, (paste_x, paste_y))
 
     # Quantize with our strict 6-color palette
     quantized = img.quantize(
