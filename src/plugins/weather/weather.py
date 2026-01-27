@@ -186,6 +186,21 @@ class Weather(BasePlugin):
         data['data_points'] = self.parse_data_points(weather_data, aqi_data, tz, units, time_format)
 
         data['hourly_forecast'] = self.parse_hourly(weather_data.get('hourly'), tz, time_format, units)
+
+        # Add sunrise/sunset times for chart indicators
+        sunrise_epoch = weather_data.get('current', {}).get("sunrise")
+        sunset_epoch = weather_data.get('current', {}).get("sunset")
+        if sunrise_epoch:
+            sunrise_dt = datetime.fromtimestamp(sunrise_epoch, tz=timezone.utc).astimezone(tz)
+            data['sunrise_time'] = self.format_time(sunrise_dt, time_format, hour_only=True)
+        else:
+            data['sunrise_time'] = None
+        if sunset_epoch:
+            sunset_dt = datetime.fromtimestamp(sunset_epoch, tz=timezone.utc).astimezone(tz)
+            data['sunset_time'] = self.format_time(sunset_dt, time_format, hour_only=True)
+        else:
+            data['sunset_time'] = None
+
         return data
 
     def parse_open_meteo_data(self, weather_data, aqi_data, tz, units, time_format, lat):
@@ -208,8 +223,24 @@ class Weather(BasePlugin):
 
         data['forecast'] = self.parse_open_meteo_forecast(weather_data.get('daily', {}), tz, is_day, lat)
         data['data_points'] = self.parse_open_meteo_data_points(weather_data, aqi_data, tz, units, time_format)
-        
+
         data['hourly_forecast'] = self.parse_open_meteo_hourly(weather_data.get('hourly', {}), tz, time_format)
+
+        # Add sunrise/sunset times for chart indicators
+        daily_data = weather_data.get('daily', {})
+        sunrise_times = daily_data.get('sunrise', [])
+        sunset_times = daily_data.get('sunset', [])
+        if sunrise_times:
+            sunrise_dt = datetime.fromisoformat(sunrise_times[0]).astimezone(tz)
+            data['sunrise_time'] = self.format_time(sunrise_dt, time_format, hour_only=True)
+        else:
+            data['sunrise_time'] = None
+        if sunset_times:
+            sunset_dt = datetime.fromisoformat(sunset_times[0]).astimezone(tz)
+            data['sunset_time'] = self.format_time(sunset_dt, time_format, hour_only=True)
+        else:
+            data['sunset_time'] = None
+
         return data
 
     def map_weather_code_to_icon(self, weather_code, is_day):
@@ -400,7 +431,7 @@ class Weather(BasePlugin):
             if units == "imperial":
                 rain = rain_mm / 25.4
             else:
-                rain = rain_mm 
+                rain = rain_mm
             hour_forecast = {
                 "time": self.format_time(dt, time_format, hour_only=True),
                 "temperature": int(hour.get("temp")),
