@@ -1,5 +1,5 @@
 from plugins.base_plugin.base_plugin import BasePlugin
-from PIL import Image
+from PIL import Image, ImageOps
 import os
 import requests
 import logging
@@ -156,6 +156,18 @@ class Weather(BasePlugin):
         template_params["last_refresh_time"] = last_refresh_time
 
         image = self.render_image(dimensions, "weather.html", "weather.css", template_params)
+
+        orientation = device_config.get_config("orientation")
+        display_size = device_config.get_resolution()
+
+        if orientation == "vertical":
+            target_size = (display_size[1], display_size[0])
+            # For portrait mode: resize then rotate for display
+            fitted_img = ImageOps.fit(image, target_size, Image.Resampling.LANCZOS)
+            image = fitted_img.rotate(90, expand=True)
+        else:
+            # Landscape mode: just resize to display dimensions
+            image = ImageOps.fit(image, display_size, Image.Resampling.LANCZOS)
 
         if not image:
             raise RuntimeError("Failed to take screenshot, please check logs.")

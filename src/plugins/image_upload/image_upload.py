@@ -1,10 +1,8 @@
 from plugins.base_plugin.base_plugin import BasePlugin
-from PIL import Image, ImageOps, ImageColor
+from PIL import Image
 import logging
 import random
 import os
-
-from utils.image_utils import pad_image_blur
 
 logger = logging.getLogger(__name__)
 
@@ -38,25 +36,10 @@ class ImageUpload(BasePlugin):
             image = self.open_image(img_index, image_locations)
             img_index = (img_index + 1) % len(image_locations)
 
-        # Resize image to fit display dimensions if larger
-        display_size = device_config.get_resolution()
-        if image.width > display_size[0] or image.height > display_size[1]:
-            image.thumbnail(display_size, Image.Resampling.LANCZOS)
-
-        # Write the new index back ot the device json
+        # Write the new index back to the device json
         settings['image_index'] = img_index
-        orientation = device_config.get_config("orientation")
 
-        if settings.get('padImage') == "true":
-            dimensions = device_config.get_resolution()
-            if orientation == "vertical":
-                dimensions = dimensions[::-1]
-
-            if settings.get('backgroundOption') == "blur":
-                return pad_image_blur(image, dimensions)
-            else:
-                background_color = ImageColor.getcolor(settings.get('backgroundColor') or (255, 255, 255), "RGB")
-                return ImageOps.pad(image, dimensions, color=background_color, method=Image.Resampling.LANCZOS)
+        # Image is already resized and rotated on upload
         return image
 
     def cleanup(self, settings):

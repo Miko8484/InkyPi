@@ -8,8 +8,9 @@ import numpy as np
 main_bp = Blueprint("main", __name__)
 
 # Waveshare 7.3" Spectra6 display configuration
-DISPLAY_WIDTH = 480
-DISPLAY_HEIGHT = 800
+DISPLAY_WIDTH = 800
+DISPLAY_HEIGHT = 480
+PORTRAIT_MODE = True
 
 # ============================================================
 # COLOR PALETTE for Spectra 6 display
@@ -53,16 +54,6 @@ PALETTE_IMAGE = _create_palette_image()
 def resize_and_dither_image(image_path):
     """Resize image to fit display and apply 6-color dithering."""
     img = Image.open(image_path).convert('RGB')
-
-    # Fit image maintaining aspect ratio, with white background
-    target_size = (DISPLAY_WIDTH, DISPLAY_HEIGHT)
-    fitted_img = ImageOps.contain(img, target_size, Image.Resampling.LANCZOS)
-
-    # Create white background and center the fitted image
-    img = Image.new('RGB', target_size, (255, 255, 255))
-    paste_x = (target_size[0] - fitted_img.width) // 2
-    paste_y = (target_size[1] - fitted_img.height) // 2
-    img.paste(fitted_img, (paste_x, paste_y))
 
     # Quantize with our strict 6-color palette
     quantized = img.quantize(
@@ -124,7 +115,7 @@ def preview_image():
 
 @main_bp.route('/api/current_image')
 def get_current_image():
-    """Serve current image."""
+    """Serve current image in display format."""
     image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'images', 'current_image.png')
 
     if not os.path.exists(image_path):

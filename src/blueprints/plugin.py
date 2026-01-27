@@ -164,7 +164,7 @@ def update_plugin_instance(instance_name):
         if not instance_name:
             raise RuntimeError("Instance name is required")
         plugin_settings = form_data
-        plugin_settings.update(handle_request_files(request.files, request.form))
+        plugin_settings.update(handle_request_files(request.files, request.form, device_config))
 
         plugin_id = plugin_settings.pop("plugin_id")
         plugin_instance = playlist_manager.find_plugin(plugin_id, instance_name)
@@ -276,7 +276,7 @@ def update_now():
 
     try:
         plugin_settings = parse_form(request.form)
-        plugin_settings.update(handle_request_files(request.files))
+        plugin_settings.update(handle_request_files(request.files, device_config=device_config))
         plugin_id = plugin_settings.pop("plugin_id")
 
         # Check if refresh task is running

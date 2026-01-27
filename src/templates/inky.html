@@ -25,7 +25,7 @@
                     headers['If-Modified-Since'] = lastModified;
                 }
 
-                const response = await fetch('{{ url_for("main.get_current_image") }}', { headers });
+                const response = await fetch('{{ url_for("main.get_current_image") }}?format=png', { headers });
                 
                 if (response.status === 304) {
                     // Image hasn't changed, no need to update
