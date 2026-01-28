@@ -236,7 +236,7 @@
   min-height: 0;
   min-width: 0;
   height: 100%;
-  font-size: min(4dvh, 3.5vw);
+  font-size: min(4.5dvh, 4vw);
   font-weight: bold;
 }
 
