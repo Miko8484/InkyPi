@@ -154,9 +154,9 @@
           if (sunriseIndex !== -1) {
             const x = xScale.getPixelForValue(sunriseIndex);
             ctx.beginPath();
-            ctx.setLineDash([4, 4]);
-            ctx.strokeStyle = 'rgba(255, 180, 50, 0.7)';
-            ctx.lineWidth = 1.5;
+            ctx.setLineDash([6, 4]);
+            ctx.strokeStyle = 'rgba(200, 140, 30, 0.9)';
+            ctx.lineWidth = 2;
             ctx.moveTo(x, yScale.top);
             ctx.lineTo(x, yScale.bottom);
             ctx.stroke();
@@ -170,9 +170,9 @@
           if (sunsetIndex !== -1) {
             const x = xScale.getPixelForValue(sunsetIndex);
             ctx.beginPath();
-            ctx.setLineDash([4, 4]);
-            ctx.strokeStyle = 'rgba(100, 100, 180, 0.7)';
-            ctx.lineWidth = 1.5;
+            ctx.setLineDash([6, 4]);
+            ctx.strokeStyle = 'rgba(80, 80, 150, 0.9)';
+            ctx.lineWidth = 2;
             ctx.moveTo(x, yScale.top);
             ctx.lineTo(x, yScale.bottom);
             ctx.stroke();
@@ -194,7 +194,7 @@
         const temps = pluginOptions.temperatures || [];
 
         ctx.save();
-        ctx.font = 'bold 10px Jost';
+        ctx.font = 'bold 12px Jost';
         ctx.fillStyle = "{{ plugin_settings.textColor }}";
         ctx.textAlign = 'center';
 
@@ -203,7 +203,7 @@
           if (i % 6 === 0) {
             const x = xScale.getPixelForValue(i);
             const y = yScale.getPixelForValue(temp);
-            ctx.fillText(temp + '°', x, y - 28);
+            ctx.fillText(temp + '°', x, y - 30);
           }
         });
 
@@ -211,7 +211,7 @@
       }
     });
 
-    // Plugin for rain annotations
+    // Plugin for rain annotations with overlap prevention
     Chart.register({
       id: 'annotationRain',
       afterDatasetsDraw(chart, args, pluginOptions) {
@@ -221,25 +221,42 @@
 
         ctx.save();
         ctx.textAlign = 'center';
-        ctx.font = '9px Jost';
+        ctx.font = 'bold 11px Jost';
 
+        // Track last drawn label position to prevent overlaps
+        let lastLabelX = -Infinity;
+        const minLabelSpacing = 45; // Minimum pixels between labels
+
+        // First pass: collect all rain points that need labels
+        const rainPoints = [];
         meta.data.forEach((point, i) => {
           const rainAmount = rainData[i];
           if (rainAmount && rainAmount > threshold) {
-            const x = point.x;
-            const y = point.y;
-            const base = chart.scales.y1.bottom;
-            const height = base - y;
-
-            let textY;
-            if (height < 25) {
-              textY = y - 6;
-            } else {
-              textY = y + 12;
-            }
-            ctx.fillStyle = "{{ plugin_settings.textColor }}";
-            ctx.fillText(rainAmount.toFixed(2) + unit, x, textY);
+            rainPoints.push({ point, rainAmount, index: i });
           }
+        });
+
+        // Second pass: draw labels with overlap prevention
+        rainPoints.forEach(({ point, rainAmount }) => {
+          const x = point.x;
+          const y = point.y;
+          const base = chart.scales.y1.bottom;
+          const height = base - y;
+
+          // Skip if too close to last label
+          if (x - lastLabelX < minLabelSpacing) {
+            return;
+          }
+
+          let textY;
+          if (height < 30) {
+            textY = y - 8;
+          } else {
+            textY = y + 14;
+          }
+          ctx.fillStyle = "{{ plugin_settings.textColor }}";
+          ctx.fillText(rainAmount.toFixed(2) + unit, x, textY);
+          lastLabelX = x;
         });
 
         ctx.restore();
@@ -255,7 +272,7 @@
             label: 'Hourly Temperature',
             data: temperatures,
             borderColor: 'rgba(241, 122, 36, 1)',
-            borderWidth: 2.5,
+            borderWidth: 3,
             pointRadius: 0,
             fill: true,
             tension: 0.4,
@@ -265,8 +282,8 @@
             type: 'line',
             label: 'Precipitation Probability',
             data: precipitation,
-            borderColor: 'rgba(26, 111, 176, 0.8)',
-            borderWidth: 2,
+            borderColor: 'rgba(26, 111, 176, 0.9)',
+            borderWidth: 2.5,
             pointRadius: 0,
             yAxisID: 'y1',
             fill: 'origin',
@@ -289,19 +306,20 @@
             x: {
               ticks: {
                 autoSkip: true,
-                maxTicksLimit: 12,
-                padding: 2,
+                maxTicksLimit: 8,
+                padding: 4,
                 maxRotation: 0,
                 minRotation: 0,
                 color: "{{ plugin_settings.textColor }}",
                 font: {
                   family: 'Jost',
-                  size: 10
+                  size: 13,
+                  weight: 'bold'
                 }
               },
               grid: {
                 display: true,
-                color: 'rgba(0, 0, 0, 0.04)',
+                color: 'rgba(0, 0, 0, 0.15)',
                 drawBorder: false,
                 tickLength: 0
               },
@@ -310,11 +328,12 @@
             y: {
               position: 'left',
               ticks: {
-                padding: 4,
+                padding: 6,
                 color: "{{ plugin_settings.textColor }}",
                 font: {
                   family: 'Jost',
-                  size: 10
+                  size: 13,
+                  weight: 'bold'
                 },
                 stepSize: Math.ceil((chartMaxTemp - chartMinTemp) / 4),
                 callback: function(value) {
@@ -326,7 +345,7 @@
               },
               grid: {
                 display: true,
-                color: 'rgba(0, 0, 0, 0.04)',
+                color: 'rgba(0, 0, 0, 0.15)',
                 drawBorder: false
               },
               min: chartMinTemp,
@@ -336,11 +355,12 @@
               position: 'right',
               grid: { display: false },
               ticks: {
-                padding: 4,
+                padding: 6,
                 color: "{{ plugin_settings.textColor }}",
                 font: {
                   family: 'Jost',
-                  size: 10
+                  size: 13,
+                  weight: 'bold'
                 },
                 stepSize: 50,
                 callback: function(value) {
