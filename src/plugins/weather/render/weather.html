@@ -138,52 +138,6 @@
     // Calculate middle temperature for labels
     const midTemp = Math.round((chartMinTemp + chartMaxTemp) / 2);
 
-    // Plugin for sunrise/sunset vertical lines
-    Chart.register({
-      id: 'sunriseSunsetLines',
-      afterDatasetsDraw(chart, args, pluginOptions) {
-        const { ctx, scales } = chart;
-        const xScale = scales.x;
-        const yScale = scales.y;
-
-        ctx.save();
-
-        // Draw sunrise line
-        if (pluginOptions.sunrise) {
-          const sunriseIndex = labels.indexOf(pluginOptions.sunrise);
-          if (sunriseIndex !== -1) {
-            const x = xScale.getPixelForValue(sunriseIndex);
-            ctx.beginPath();
-            ctx.setLineDash([6, 4]);
-            ctx.strokeStyle = 'rgba(200, 140, 30, 0.9)';
-            ctx.lineWidth = 2;
-            ctx.moveTo(x, yScale.top);
-            ctx.lineTo(x, yScale.bottom);
-            ctx.stroke();
-            ctx.setLineDash([]);
-          }
-        }
-
-        // Draw sunset line
-        if (pluginOptions.sunset) {
-          const sunsetIndex = labels.indexOf(pluginOptions.sunset);
-          if (sunsetIndex !== -1) {
-            const x = xScale.getPixelForValue(sunsetIndex);
-            ctx.beginPath();
-            ctx.setLineDash([6, 4]);
-            ctx.strokeStyle = 'rgba(80, 80, 150, 0.9)';
-            ctx.lineWidth = 2;
-            ctx.moveTo(x, yScale.top);
-            ctx.lineTo(x, yScale.bottom);
-            ctx.stroke();
-            ctx.setLineDash([]);
-          }
-        }
-
-        ctx.restore();
-      }
-    });
-
     // Plugin for temperature labels on key points
     Chart.register({
       id: 'tempLabelsPlugin',
@@ -371,10 +325,6 @@
           },
           plugins: {
             legend: { display: false },
-            sunriseSunsetLines: {
-              sunrise: sunriseTime,
-              sunset: sunsetTime
-            },
             tempLabelsPlugin: {
               temperatures: temperatures
             },
