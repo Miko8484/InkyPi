@@ -148,7 +148,7 @@
         const temps = pluginOptions.temperatures || [];
 
         ctx.save();
-        ctx.font = 'bold 14px Jost';
+        ctx.font = 'bold 16px Jost';
         ctx.fillStyle = "{{ plugin_settings.textColor }}";
         ctx.textAlign = 'center';
 
@@ -228,7 +228,7 @@
             borderColor: 'rgba(241, 122, 36, 1)',
             borderWidth: 3,
             pointRadius: 0,
-            fill: true,
+            fill: false,
             tension: 0.4,
             order: 1
           },
@@ -240,7 +240,7 @@
             borderWidth: 2.5,
             pointRadius: 0,
             yAxisID: 'y1',
-            fill: 'origin',
+            fill: false,
             tension: 0.4,
             order: 2
           }]
@@ -260,14 +260,14 @@
             x: {
               ticks: {
                 autoSkip: true,
-                maxTicksLimit: 16,
+                maxTicksLimit: 12,
                 padding: 2,
                 maxRotation: 0,
                 minRotation: 0,
                 color: "{{ plugin_settings.textColor }}",
                 font: {
                   family: 'Jost',
-                  size: 13,
+                  size: 16,
                   weight: 'bold'
                 }
               },
@@ -283,7 +283,7 @@
                 color: "{{ plugin_settings.textColor }}",
                 font: {
                   family: 'Jost',
-                  size: 15,
+                  size: 16,
                   weight: 'bold'
                 },
                 stepSize: Math.ceil((chartMaxTemp - chartMinTemp) / 4),
@@ -308,7 +308,7 @@
                 color: "{{ plugin_settings.textColor }}",
                 font: {
                   family: 'Jost',
-                  size: 15,
+                  size: 12,
                   weight: 'bold'
                 },
                 stepSize: 50,
