@@ -516,14 +516,11 @@ class Weather(BasePlugin):
         else:
             logging.error(f"Sunset not found in OpenWeatherMap response, this is expected for polar areas in midnight sun and polar night periods.")
 
-        wind_deg = weather.get('current', {}).get("wind_deg", 0)
-        wind_arrow = self.get_wind_arrow(wind_deg)
         data_points.append({
-            "label": "Wind",
-            "measurement": weather.get('current', {}).get("wind_speed"),
-            "unit": UNITS[units]["speed"],
-            "icon": self.get_plugin_dir('icons/wind.png'),
-            "arrow": wind_arrow
+            "label": "UV Index",
+            "measurement": weather.get('current', {}).get("uvi"),
+            "unit": '',
+            "icon": self.get_plugin_dir('icons/uvi.png')
         })
 
         data_points.append({
@@ -533,11 +530,14 @@ class Weather(BasePlugin):
             "icon": self.get_plugin_dir('icons/humidity.png')
         })
 
+        wind_deg = weather.get('current', {}).get("wind_deg", 0)
+        wind_arrow = self.get_wind_arrow(wind_deg)
         data_points.append({
-            "label": "UV Index",
-            "measurement": weather.get('current', {}).get("uvi"),
-            "unit": '',
-            "icon": self.get_plugin_dir('icons/uvi.png')
+            "label": "Wind",
+            "measurement": weather.get('current', {}).get("wind_speed"),
+            "unit": UNITS[units]["speed"],
+            "icon": self.get_plugin_dir('icons/wind.png'),
+            "arrow": wind_arrow
         })
 
         aqi = air_quality.get('list', [])[0].get("main", {}).get("aqi")
@@ -585,14 +585,21 @@ class Weather(BasePlugin):
         else:
             logging.error(f"Sunset not found in Open-Meteo response, this is expected for polar areas in midnight sun and polar night periods.")
 
-        # Wind
-        wind_speed = current_data.get("windspeed", 0)
-        wind_deg = current_data.get("winddirection", 0)
-        wind_arrow = self.get_wind_arrow(wind_deg)
-        wind_unit = UNITS[units]["speed"]
+        # UV Index
+        uv_index_hourly_times = aqi_data.get('hourly', {}).get('time', [])
+        uv_index_values = aqi_data.get('hourly', {}).get('uv_index', [])
+        current_uv_index = "N/A"
+        for i, time_str in enumerate(uv_index_hourly_times):
+            try:
+                if datetime.fromisoformat(time_str).astimezone(tz).hour == current_time.hour:
+                    current_uv_index = uv_index_values[i]
+                    break
+            except ValueError:
+                logger.warning(f"Could not parse time string {time_str} for UV Index.")
+                continue
         data_points.append({
-            "label": "Wind", "measurement": wind_speed, "unit": wind_unit,
-            "icon": self.get_plugin_dir('icons/wind.png'), "arrow": wind_arrow
+            "label": "UV Index", "measurement": current_uv_index, "unit": '',
+            "icon": self.get_plugin_dir('icons/uvi.png')
         })
 
         # Humidity
@@ -612,21 +619,14 @@ class Weather(BasePlugin):
             "icon": self.get_plugin_dir('icons/humidity.png')
         })
 
-        # UV Index
-        uv_index_hourly_times = aqi_data.get('hourly', {}).get('time', [])
-        uv_index_values = aqi_data.get('hourly', {}).get('uv_index', [])
-        current_uv_index = "N/A"
-        for i, time_str in enumerate(uv_index_hourly_times):
-            try:
-                if datetime.fromisoformat(time_str).astimezone(tz).hour == current_time.hour:
-                    current_uv_index = uv_index_values[i]
-                    break
-            except ValueError:
-                logger.warning(f"Could not parse time string {time_str} for UV Index.")
-                continue
+        # Wind
+        wind_speed = current_data.get("windspeed", 0)
+        wind_deg = current_data.get("winddirection", 0)
+        wind_arrow = self.get_wind_arrow(wind_deg)
+        wind_unit = UNITS[units]["speed"]
         data_points.append({
-            "label": "UV Index", "measurement": current_uv_index, "unit": '',
-            "icon": self.get_plugin_dir('icons/uvi.png')
+            "label": "Wind", "measurement": wind_speed, "unit": wind_unit,
+            "icon": self.get_plugin_dir('icons/wind.png'), "arrow": wind_arrow
         })
 
         # Air Quality
