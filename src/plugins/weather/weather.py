@@ -257,7 +257,7 @@ class Weather(BasePlugin):
 
     def map_weather_code_to_icon(self, weather_code, is_day):
 
-        icon = "51d" # Default to clear day icon
+        icon = "57d" # Default to clear day icon
 
         return icon
 
