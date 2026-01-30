@@ -177,7 +177,8 @@ def handle_request_files(request_files, form_data={}, device_config=None):
 
                     # Apply resize and rotation if device_config is provided
                     if device_config:
-                        img = _resize_and_rotate_image(img, device_config)
+                        border_percent = int(form_data.get("borderPercent", 0))
+                        img = _resize_and_rotate_image(img, device_config, border_percent)
 
                     img.save(file_path)
             except Exception as e:
@@ -196,7 +197,7 @@ def handle_request_files(request_files, form_data={}, device_config=None):
     return file_location_map
 
 
-def _resize_and_rotate_image(image, device_config):
+def _resize_and_rotate_image(image, device_config, border_percent=0):
     # Resize and rotate image based on device configuration.
     orientation = device_config.get_config("orientation")
     display_size = device_config.get_resolution()
@@ -214,5 +215,20 @@ def _resize_and_rotate_image(image, device_config):
     else:
         # Landscape mode: just resize to display dimensions
         image = ImageOps.fit(image, display_size, Image.Resampling.LANCZOS)
+
+    # Apply border if border_percent > 0
+    if border_percent > 0:
+        canvas_size = image.size
+        shrink_factor = 1 - (border_percent / 100)
+        new_width = int(canvas_size[0] * shrink_factor)
+        new_height = int(canvas_size[1] * shrink_factor)
+        shrunk_image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+        # Create white canvas and paste shrunk image centered
+        white_canvas = Image.new("RGB", canvas_size, (255, 255, 255))
+        paste_x = (canvas_size[0] - new_width) // 2
+        paste_y = (canvas_size[1] - new_height) // 2
+        white_canvas.paste(shrunk_image, (paste_x, paste_y))
+        image = white_canvas
 
     return image

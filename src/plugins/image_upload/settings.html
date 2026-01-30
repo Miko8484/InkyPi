@@ -27,6 +27,11 @@
             <input type="color" id="backgroundColor" name="backgroundColor" value="#ffffff" class="color-picker"/>
         </div>
     </div>
+    <div class="form-group">
+        <label class="form-label" for="borderPercent">Border Size: <span id="borderPercentValue">0</span>%</label>
+        <input type="range" id="borderPercent" name="borderPercent" min="0" max="10" step="1" value="0" class="form-range"
+               oninput="document.getElementById('borderPercentValue').textContent = this.value">
+    </div>
 </div>
 
 <div class="form-group">
@@ -109,6 +114,9 @@
             document.getElementById('padImage').checked = pluginSettings.padImage == 'false';
             document.getElementById('randomize').checked = pluginSettings.randomize;
             document.getElementById('backgroundColor').value = pluginSettings.backgroundColor;
+            const borderPercent = pluginSettings.borderPercent || 0;
+            document.getElementById('borderPercent').value = borderPercent;
+            document.getElementById('borderPercentValue').textContent = borderPercent;
 
             const existingFiles = pluginSettings['imageFiles[]'] || []
             backgroundOption = pluginSettings.backgroundOption || 'blur'
