@@ -268,6 +268,7 @@
 .chart-container {
   width: 100%;
   height: 26dvh;
+  margin-top: -1dvh;
 }
 
 .separator {
@@ -372,8 +373,9 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 1dvh 4dvw;
+  padding: 0dvh 4dvw;
   text-align: center;
+  min-height: 12dvh;
 }
 
 .quote-text {
