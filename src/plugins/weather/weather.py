@@ -257,8 +257,52 @@ class Weather(BasePlugin):
 
     def map_weather_code_to_icon(self, weather_code, is_day):
 
-        icon = "57d" # Default to clear day icon
+        icon = "01d" # Default to clear day icon
+        
+        if weather_code in [0]:   # Clear sky
+            icon = "01d"
+        elif weather_code in [1]: # Mainly clear
+            icon = "022d"
+        elif weather_code in [2]: # Partly cloudy
+            icon = "02d"
+        elif weather_code in [3]: # Overcast
+            icon = "04d"
+        elif weather_code in [51, 61, 80]: # Drizzle, showers, rain: Light
+            icon = "51d"          
+        elif weather_code in [53, 63, 81]: # Drizzle, showers, rain: Moderatr
+            icon = "53d"
+        elif weather_code in [55, 65, 82]: # Drizzle, showers, rain: Heavy
+            icon = "09d"
+        elif weather_code in [45]: # Fog
+            icon = "50d"                       
+        elif weather_code in [48]: # Icy fog
+            icon = "48d"
+        elif weather_code in [56, 66]: # Light freezing Drizzle
+            icon = "56d"            
+        elif weather_code in [57, 67]: # Freezing Drizzle
+            icon = "57d"            
+        elif weather_code in [71, 85]: # Snow fall: Slight
+            icon = "71d"
+        elif weather_code in [73]:     # Snow fall: Moderate
+            icon = "73d"
+        elif weather_code in [75, 86]: # Snow fall: Heavy
+            icon = "13d"
+        elif weather_code in [77]:     # Snow grain
+            icon = "77d"
+        elif weather_code in [95]: # Thunderstorm
+            icon = "11d"
+        elif weather_code in [96, 99]: # Thunderstorm with slight and heavy hail
+            icon = "11d"
 
+        if is_day == 0:
+            if icon == "01d":
+                icon = "01n"      # Clear sky night
+            elif icon == "022d":
+                icon = "022n"     # Mainly clear night
+            elif icon == "02d":
+                icon = "02n"      # Partly cloudy night                
+            elif icon == "10d":
+                icon = "10n"      # Rain night
         return icon
 
     def get_moon_phase_icon_path(self, phase_name: str, lat: float) -> str:
@@ -318,7 +362,7 @@ class Weather(BasePlugin):
             else:
                 if weather_icon.endswith('n'):
                     weather_icon = weather_icon.replace("n", "d")
-            weather_icon_path = self.get_plugin_dir(f"icons/{weather_icon}.png")
+            weather_icon_path = self.get_plugin_dir(f"icons/{weather_icon}-sm.svg")
 
             # --- moon phase & icon ---
             moon_phase = float(day["moon_phase"])  # [0.0–1.0]
@@ -362,7 +406,7 @@ class Weather(BasePlugin):
 
             code = weather_codes[i] if i < len(weather_codes) else 0
             weather_icon = self.map_weather_code_to_icon(code, is_day)
-            weather_icon_path = self.get_plugin_dir(f"icons/{weather_icon}.png")
+            weather_icon_path = self.get_plugin_dir(f"icons/{weather_icon}-sm.svg")
 
             timestamp = int(dt.replace(hour=12, minute=0, second=0).timestamp())
             target_date: date = dt.date() + timedelta(days=1)
